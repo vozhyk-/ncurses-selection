@@ -72,5 +72,10 @@ char *read_line(FILE *stream)
 	
 	ssize_t len = getline(&line, &buffer_len, stream);
 
-	return len != -1 ? line : NULL;
+	if (len == -1) {
+		free(line);
+		return NULL;
+	} else {
+		return line;
+	}
 }
