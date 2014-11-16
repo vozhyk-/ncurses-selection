@@ -7,7 +7,6 @@ char *read_line(FILE *stream);
 
 int main(int argc, char *argv[])
 {
-	FILE *file;
 	char *line;
 	char *lines[20];
 	int is_selected[20] = {0};
