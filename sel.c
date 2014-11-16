@@ -50,8 +50,6 @@ int main(int argc, char *argv[])
 			is_selected[pos] = 1 - is_selected[pos];
 			mvprintw(pos, 1, is_selected[pos] ? "*" : " ");
 			break;
-		default:
-			fprintf(stderr, "%o\n", ch);
 		}
 	} while (ch != 'q' && ch != '\n');
 
