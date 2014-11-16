@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
 	char *lines[20];
 	int is_selected[20] = {0};
 	int num_lines = 0;
+	int i;
 	int ch;
 	int pos = 0, last_pos = 0;
 	
@@ -25,7 +26,7 @@ int main(int argc, char *argv[])
 	noecho();
 	keypad(stdscr, TRUE);
 
-	for (int i = 0; i < num_lines; i++)
+	for (i = 0; i < num_lines; i++)
 		printw("   %s", lines[i]);
 	refresh();
 
@@ -56,7 +57,7 @@ int main(int argc, char *argv[])
 
 	endwin();
 
-	for (int i = 0; i < num_lines; i++)
+	for (i = 0; i < num_lines; i++)
 		if (is_selected[i])
 			fputs(lines[i], stderr);
 
