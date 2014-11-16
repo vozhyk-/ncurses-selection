@@ -61,6 +61,9 @@ int main(int argc, char *argv[])
 		if (is_selected[i])
 			fputs(lines[i], stderr);
 
+	for (i = 0; i < num_lines; i++)
+		free(lines[i]);
+
 	return 0;
 }
 
