@@ -63,6 +63,7 @@ void main_loop(char *choices[], int is_selected[], int num_choices)
 		refresh();
 
 		last_pos = pos;
+		win_last_pos = last_pos - scroll_off;
 
 		ch = getch();
 		switch (ch) {
@@ -80,12 +81,13 @@ void main_loop(char *choices[], int is_selected[], int num_choices)
 		}
 
 		win_pos = pos - scroll_off;
-		win_last_pos = last_pos - scroll_off;
 
 		if (pos < scroll_off)
 			scroll_off = pos;
 		else if (win_pos >= max_y)
 			scroll_off += win_pos - (max_y - 1);
+		/* recalculate after scrolling */
+		win_pos = pos - scroll_off;
 	} while (ch != 'q' && ch != '\n');
 }
 
