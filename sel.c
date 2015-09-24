@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <ncurses.h>
 
+#define MAX_CHOICES 600
+
 char *read_line(FILE *stream);
 
 void show_choices(int start, int count, char* choices[], int is_selected[]);
@@ -11,8 +13,8 @@ void main_loop(char *choices[], int is_selected[], int num_choices);
 
 int main(int argc, char *argv[])
 {
-	char *choices[20];
-	int is_selected[20] = {0};
+	char *choices[MAX_CHOICES];
+	int is_selected[MAX_CHOICES] = {0};
 	int num_choices = 0;
 	
 	/* read choices */
