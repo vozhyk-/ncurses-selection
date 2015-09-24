@@ -1,26 +1,34 @@
 #define _POSIX_C_SOURCE 200809L
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <locale.h>
 #include <ncurses.h>
 
-#define MAX_CHOICES 600
+#include "dyn_arr.h"
+
 
 char *read_line(FILE *stream);
 
-void show_choices(int start, int count, char* choices[], int is_selected[]);
-void select_choices(char *choices[], int is_selected[], int num_choices);
+void show_choices(int start, int count,
+		  const struct p_dyn_arr *choices,
+		  const struct dyn_arr *is_selected);
+void select_choices(struct p_dyn_arr *choices, struct dyn_arr *is_selected);
 
 int main(int argc, char *argv[])
 {
-	char *choices[MAX_CHOICES];
-	int is_selected[MAX_CHOICES] = {0};
-	int num_choices = 0;
-	
+	struct p_dyn_arr choices = {0};
+	struct dyn_arr is_selected = { sizeof(bool) };
+
 	/* read choices */
 	char *line;
-	while ((line = read_line(stdin)) != NULL)
-		choices[num_choices++] = line;
+	bool initial_selected = false;
+	while ((line = read_line(stdin)) != NULL) {
+		p_dyn_arr_append(&choices, line);
+
+		dyn_arr_append(&is_selected, &initial_selected);
+	}
 
 	FILE *term = fopen("/dev/tty", "r+");
 	SCREEN *scr = newterm(NULL, term, term);
@@ -28,22 +36,27 @@ int main(int argc, char *argv[])
 	noecho();
 	keypad(stdscr, TRUE);
 
-	select_choices(choices, is_selected, num_choices);
+	select_choices(&choices, &is_selected);
 
 	endwin();
 
 	/* write selected choices */
-	for (int i = 0; i < num_choices; i++)
-		if (is_selected[i])
-			fputs(choices[i], stdout);
+	for (int i = 0; i < choices.count; i++) {
+		bool is_sel = *(bool *)dyn_arr_get(&is_selected, i);
 
-	for (int i = 0; i < num_choices; i++)
-		free(choices[i]);
+		if (is_sel)
+			fputs(p_dyn_arr_get(&choices, i), stdout);
+	}
+
+	for (int i = 0; i < choices.count; i++)
+		free(p_dyn_arr_get(&choices, i));
+	p_dyn_arr_clear(&choices);
+	dyn_arr_clear(&is_selected);
 
 	return 0;
 }
 
-void select_choices(char *choices[], int is_selected[], int num_choices)
+void select_choices(struct p_dyn_arr *choices, struct dyn_arr *is_selected)
 {
 	int ch;
 	int pos = 0, last_pos = 0;
@@ -52,7 +65,7 @@ void select_choices(char *choices[], int is_selected[], int num_choices)
 	do {
 		int max_y = getmaxy(stdscr);
 		int choices_visible =
-			num_choices <= max_y ? num_choices : max_y;
+			choices->count <= max_y ? choices->count : max_y;
 
 		show_choices(scroll_off, choices_visible, choices, is_selected);
 
@@ -70,14 +83,14 @@ void select_choices(char *choices[], int is_selected[], int num_choices)
 		switch (ch) {
 		case KEY_UP:
 			pos--;
-			if (pos < 0) pos = num_choices - 1;
+			if (pos < 0) pos = choices->count - 1;
 			break;
 		case KEY_DOWN:
 			pos++;
-			if (pos >= num_choices) pos = 0;
+			if (pos >= choices->count) pos = 0;
 			break;
 		case ' ':
-			is_selected[pos] ^= 1;
+			*(bool *)dyn_arr_get(is_selected, pos) ^= 1;
 			break;
 		}
 
@@ -92,22 +105,27 @@ void select_choices(char *choices[], int is_selected[], int num_choices)
 	} while (ch != 'q' && ch != '\n');
 }
 
-void show_choices(int start, int count, char* choices[], int is_selected[])
+void show_choices(int start, int count,
+		  const struct p_dyn_arr *choices,
+		  const struct dyn_arr *is_selected)
 {
 	int max_x = getmaxx(stdscr);
 
 	for (int i = start; i < start + count; i++) {
-		mvaddstr(i - start, 1, is_selected[i] ? "*" : " ");
-		mvaddnstr(i - start, 3, choices[i], max_x - 3);
+		bool is_sel = *(bool *)dyn_arr_get(is_selected, i);
+		mvaddstr(i - start, 1, is_sel ? "*" : " ");
+		mvaddnstr(i - start, 3,
+			  p_dyn_arr_get(choices, i),
+			  max_x - 3);
 	}
-	refresh();
+	/* screen refresh to be done elsewere */
 }
 
 char *read_line(FILE *stream)
 {
 	char *line = NULL;
 	size_t buffer_len = 0;
-	
+
 	ssize_t len = getline(&line, &buffer_len, stream);
 
 	if (len == -1) {
