@@ -87,9 +87,11 @@ void main_loop(char *choices[], int is_selected[], int num_choices)
 
 void show_choices(int start, int count, char* choices[], int is_selected[])
 {
+	int max_x = getmaxx(stdscr);
+
 	for (int i = start; i < start + count; i++) {
 		mvaddstr(i - start, 1, is_selected[i] ? "*" : " ");
-		mvaddstr(i - start, 3, choices[i]);
+		mvaddnstr(i - start, 3, choices[i], max_x - 3);
 	}
 	refresh();
 }
