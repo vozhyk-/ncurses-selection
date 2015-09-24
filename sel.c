@@ -46,13 +46,12 @@ void main_loop(char *choices[], int is_selected[], int num_choices)
 {
 	int ch;
 	int pos = 0, last_pos = 0;
+	int win_pos = 0, win_last_pos = 0;
 	int scroll_off = 0;
 	do {
 		int max_y = getmaxy(stdscr);
 		int choices_visible =
 			num_choices <= max_y ? num_choices : max_y;
-		int win_pos = pos - scroll_off;
-		int win_last_pos = last_pos - scroll_off;
 
 		show_choices(scroll_off, choices_visible, choices, is_selected);
 
@@ -80,10 +79,13 @@ void main_loop(char *choices[], int is_selected[], int num_choices)
 			break;
 		}
 
+		win_pos = pos - scroll_off;
+		win_last_pos = last_pos - scroll_off;
+
 		if (pos < scroll_off)
 			scroll_off = pos;
-		else if (pos > max_y)
-			scroll_off = pos - max_y;
+		else if (win_pos >= max_y)
+			scroll_off += win_pos - (max_y - 1);
 	} while (ch != 'q' && ch != '\n');
 }
 
