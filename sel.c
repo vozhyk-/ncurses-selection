@@ -9,7 +9,7 @@
 char *read_line(FILE *stream);
 
 void show_choices(int start, int count, char* choices[], int is_selected[]);
-void main_loop(char *choices[], int is_selected[], int num_choices);
+void select_choices(char *choices[], int is_selected[], int num_choices);
 
 int main(int argc, char *argv[])
 {
@@ -22,19 +22,20 @@ int main(int argc, char *argv[])
 	while ((line = read_line(stdin)) != NULL)
 		choices[num_choices++] = line;
 
-	freopen("/dev/tty", "r", stdin);
-	initscr();
+	FILE *term = fopen("/dev/tty", "r+");
+	SCREEN *scr = newterm(NULL, term, term);
 	cbreak();
 	noecho();
 	keypad(stdscr, TRUE);
 
-	main_loop(choices, is_selected, num_choices);
+	select_choices(choices, is_selected, num_choices);
 
 	endwin();
 
+	/* write selected choices */
 	for (int i = 0; i < num_choices; i++)
 		if (is_selected[i])
-			fputs(choices[i], stderr);
+			fputs(choices[i], stdout);
 
 	for (int i = 0; i < num_choices; i++)
 		free(choices[i]);
@@ -42,7 +43,7 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void main_loop(char *choices[], int is_selected[], int num_choices)
+void select_choices(char *choices[], int is_selected[], int num_choices)
 {
 	int ch;
 	int pos = 0, last_pos = 0;

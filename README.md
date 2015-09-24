@@ -1,9 +1,11 @@
 ncurses-selection
 =================
 
-An ncurses menu for selecting a subset of given lines.  Reads
-newline-separated choices from `stdin`, allows the user to choose a
-subset of them, and writes what's selected to `stderr`.
+An ncurses menu for selecting a subset of given lines.
+
+Reads newline-separated choices from standard input, allows the user
+to choose a subset of them, and writes what's selected to standard
+output.
 
 Keys
 ----
@@ -15,6 +17,5 @@ Example usage
 -------------
 Select files from `~` and delete them
 ```
-ls -1 ~ | ./sel 2> result
-xargs rm < result
+ls -1d ~/* | ./sel | xargs -d$'\n' rm
 ```
