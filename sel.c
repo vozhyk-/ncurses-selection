@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
 		dyn_arr_append(&is_selected, &initial_selected);
 	}
 
+	setlocale(LC_CTYPE, "");
 	FILE *term = fopen("/dev/tty", "r+");
 	SCREEN *scr = newterm(NULL, term, term);
 	cbreak();
